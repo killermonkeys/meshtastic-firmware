@@ -89,6 +89,8 @@ static const uint8_t A7 = PIN_A7;
 #define PIN_AREF (2)
 #define PIN_NFC1 (9)
 #define WB_IO5 PIN_NFC1
+#define WB_IO1 (17)
+#define WB_A1 PIN_A1
 #define WB_IO4 (4)
 #define PIN_NFC2 (10)
 
@@ -203,7 +205,8 @@ SO GPIO 39/TXEN MAY NOT BE DEFINED FOR SUCCESSFUL OPERATION OF THE SX1262 - TG
 // try disabling this.
 #define PMSA003I_ENABLE_PIN PIN_NFC2
 
-#define DETECTION_SENSOR_EN 4
+// WB_IO4 (GPIO 4) is RAK5801 channel A0 — do not use Detection Sensor module with monitor_pin 4.
+#undef DETECTION_SENSOR_EN
 
 #define USE_SX1262
 #define SX126X_CS (42)
@@ -231,15 +234,12 @@ SO GPIO 39/TXEN MAY NOT BE DEFINED FOR SUCCESSFUL OPERATION OF THE SX1262 - TG
 #define PIN_3V3_EN (34)
 #define WB_IO2 PIN_3V3_EN
 
-// RAK1910 GPS module
-// If using the wisblock GPS module and pluged into Port A on WisBlock base
-// IO1 is hooked to PPS (pin 12 on header) = gpio 17
-// IO2 is hooked to GPS RESET = gpio 34, but it can not be used to this because IO2 is ALSO used to control 3V3_S power (1 is on).
-// Therefore must be 1 to keep peripherals powered
-// Power is on the controllable 3V3_S rail
-// #define PIN_GPS_RESET (34)
-// #define PIN_GPS_EN PIN_3V3_EN
-#define PIN_GPS_PPS (17) // Pulse per second input from the GPS
+// RAK5801 4-20mA module (IO slot) uses WB_IO1 for 12V sensor power. With RAK5801 installed, put GNSS in
+// Sensor Slot D so 1PPS uses WB_IO5 — not Slot A (PPS on IO1 conflicts with RAK5801 power enable).
+// RAK1910 GPS module (Sensor Slot A): IO1 = PPS = gpio 17. IO2 = GPS reset but also PIN_3V3_EN.
+#define PIN_GPS_PPS_SLOT_A (17)
+#define PIN_GPS_PPS_SLOT_D (9) // WB_IO5 when RAK5801 occupies IO slot
+#define PIN_GPS_PPS PIN_GPS_PPS_SLOT_A
 
 #define GPS_RX_PIN PIN_SERIAL1_RX
 #define GPS_TX_PIN PIN_SERIAL1_TX

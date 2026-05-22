@@ -74,6 +74,10 @@ extern void drawCommonHeader(OLEDDisplay *display, int16_t x, int16_t y, const c
 #include "Sensor/RAK12035Sensor.h"
 #endif
 
+#if defined(RAK_4631) && RAK_4631 == 1
+#include "Sensor/RAK5801Sensor.h"
+#endif
+
 #if __has_include(<Adafruit_VEML7700.h>)
 #include "Sensor/VEML7700Sensor.h"
 #endif
@@ -208,6 +212,9 @@ void EnvironmentTelemetryModule::i2cScanFinished(ScanI2C *i2cScanner)
 #endif
 #if __has_include("RAK12035_SoilMoisture.h") && defined(RAK_4631) && RAK_4631 == 1
     addSensor<RAK12035Sensor>(i2cScanner, ScanI2C::DeviceType::RAK12035);
+#endif
+#if defined(RAK_4631) && RAK_4631 == 1
+    addSensor<RAK5801Sensor>(i2cScanner, ScanI2C::DeviceType::NONE);
 #endif
 #if __has_include(<Adafruit_VEML7700.h>)
     addSensor<VEML7700Sensor>(i2cScanner, ScanI2C::DeviceType::VEML7700);
@@ -371,7 +378,8 @@ void EnvironmentTelemetryModule::drawFrame(OLEDDisplay *display, OLEDDisplayUiSt
 
     // Check if any telemetry field has valid data
     bool hasAny = m.has_temperature || m.has_relative_humidity || m.barometric_pressure != 0 || m.iaq != 0 || m.voltage != 0 ||
-                  m.current != 0 || m.lux != 0 || m.white_lux != 0 || m.weight != 0 || m.distance != 0 || m.radiation != 0;
+                  m.current != 0 || m.has_current_a0 || m.has_current_a1 || m.lux != 0 || m.white_lux != 0 || m.weight != 0 ||
+                  m.distance != 0 || m.radiation != 0;
 
     if (!hasAny) {
         display->drawString(x, currentY, "No Telemetry");
@@ -448,6 +456,10 @@ void EnvironmentTelemetryModule::drawFrame(OLEDDisplay *display, OLEDDisplayUiSt
     }
     if (m.voltage != 0 || m.current != 0)
         entries.push_back(String(m.voltage, 1) + "V / " + String(m.current, 0) + "mA");
+    if (m.has_current_a0)
+        entries.push_back("A0: " + String(m.current_a0, 2) + "mA");
+    if (m.has_current_a1)
+        entries.push_back("A1: " + String(m.current_a1, 2) + "mA");
     if (m.lux != 0)
         entries.push_back("Light: " + String(m.lux, 0) + "lx");
     if (m.white_lux != 0)
@@ -626,6 +638,11 @@ bool EnvironmentTelemetryModule::sendTelemetry(NodeNum dest, bool phoneOnly)
 
         LOG_INFO("Send: soil_temperature=%f, soil_moisture=%u", m.variant.environment_metrics.soil_temperature,
                  m.variant.environment_metrics.soil_moisture);
+
+        if (m.variant.environment_metrics.has_current_a0 || m.variant.environment_metrics.has_current_a1) {
+            LOG_INFO("Send: current_a0=%f mA, current_a1=%f mA", m.variant.environment_metrics.current_a0,
+                     m.variant.environment_metrics.current_a1);
+        }
 
         meshtastic_MeshPacket *p = allocDataProtobuf(m);
         p->to = dest;

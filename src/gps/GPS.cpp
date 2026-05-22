@@ -21,6 +21,10 @@
 #include "cas.h"
 #include "ubx.h"
 
+#if defined(RAK_4631) && RAK_4631 == 1 && !MESHTASTIC_EXCLUDE_ENVIRONMENTAL_SENSOR
+#include "modules/Telemetry/Sensor/RAK5801Sensor.h"
+#endif
+
 #ifdef ARCH_PORTDUINO
 #include "PortduinoGlue.h"
 #include "meshUtils.h"
@@ -1589,7 +1593,12 @@ std::unique_ptr<GPS> GPS::createGps()
 
 #ifdef PIN_GPS_PPS
     // pulse per second
+#if defined(RAK_4631) && RAK_4631 == 1 && defined(PIN_GPS_PPS_SLOT_D) && !MESHTASTIC_EXCLUDE_ENVIRONMENTAL_SENSOR
+    const uint8_t ppsPin = rak5801Present ? PIN_GPS_PPS_SLOT_D : PIN_GPS_PPS;
+    pinMode(ppsPin, INPUT);
+#else
     pinMode(PIN_GPS_PPS, INPUT);
+#endif
 #endif
 
 #ifdef PIN_GPS_SWITCH

@@ -139,6 +139,12 @@ std::string MeshPacketSerializer::JsonSerialize(const meshtastic_MeshPacket *mp,
                     if (decoded->variant.environment_metrics.has_soil_temperature) {
                         msgPayload["soil_temperature"] = new JSONValue(decoded->variant.environment_metrics.soil_temperature);
                     }
+                    if (decoded->variant.environment_metrics.has_current_a0) {
+                        msgPayload["current_a0"] = new JSONValue(decoded->variant.environment_metrics.current_a0);
+                    }
+                    if (decoded->variant.environment_metrics.has_current_a1) {
+                        msgPayload["current_a1"] = new JSONValue(decoded->variant.environment_metrics.current_a1);
+                    }
                 } else if (decoded->which_variant == meshtastic_Telemetry_air_quality_metrics_tag) {
                     if (decoded->variant.air_quality_metrics.has_pm10_standard) {
                         msgPayload["pm10"] = new JSONValue((unsigned int)decoded->variant.air_quality_metrics.pm10_standard);

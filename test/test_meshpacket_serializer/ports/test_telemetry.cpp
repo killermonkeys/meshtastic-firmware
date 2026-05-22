@@ -109,6 +109,12 @@ static size_t encode_telemetry_environment_metrics_all_fields(uint8_t *buffer, s
     telemetry.variant.environment_metrics.soil_temperature = 18.54f;
     telemetry.variant.environment_metrics.has_soil_temperature = true;
 
+    // RAK5801 4-20mA loop current (mA)
+    telemetry.variant.environment_metrics.current_a0 = 12.5f;
+    telemetry.variant.environment_metrics.has_current_a0 = true;
+    telemetry.variant.environment_metrics.current_a1 = 4.0f;
+    telemetry.variant.environment_metrics.has_current_a1 = true;
+
     // IMPORTANT: When new environment fields are added to the protobuf,
     // they MUST be added here too, or the coverage test will fail!
 
@@ -396,7 +402,7 @@ void test_telemetry_environment_metrics_complete_coverage()
 
     JSONObject payload = jsonObj["payload"]->AsObject();
 
-    // ✅ ALL 22 environment fields MUST be present and correct
+    // ✅ ALL 24 environment fields MUST be present and correct
     // If this test fails, it means either:
     // 1. A new field was added to the protobuf but not to the serializer
     // 2. The encode_telemetry_environment_metrics_all_fields() function wasn't updated
@@ -465,7 +471,13 @@ void test_telemetry_environment_metrics_complete_coverage()
     TEST_ASSERT_TRUE(payload.find("soil_temperature") != payload.end());
     TEST_ASSERT_FLOAT_WITHIN(0.01f, 18.54f, payload["soil_temperature"]->AsNumber());
 
-    // Total: 22 environment fields
+    // RAK5801 4-20mA (2 fields)
+    TEST_ASSERT_TRUE(payload.find("current_a0") != payload.end());
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, 12.5f, payload["current_a0"]->AsNumber());
+    TEST_ASSERT_TRUE(payload.find("current_a1") != payload.end());
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, 4.0f, payload["current_a1"]->AsNumber());
+
+    // Total: 24 environment fields
     // This test ensures 100% coverage of environment metrics
 
     // Note: JSON float serialization precision may vary due to the underlying library

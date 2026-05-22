@@ -38,6 +38,9 @@
 #include "mesh/generated/meshtastic/config.pb.h"
 #include "meshUtils.h"
 #include "modules/Modules.h"
+#if defined(RAK_4631) && RAK_4631 == 1 && !MESHTASTIC_EXCLUDE_ENVIRONMENTAL_SENSOR
+#include "modules/Telemetry/Sensor/RAK5801Sensor.h"
+#endif
 #include "sleep.h"
 #include "target_specific.h"
 #include <memory>
@@ -869,6 +872,10 @@ void setup()
 #endif
 
     readFromRTC(); // read the main CPU RTC at first (in case we can't get GPS time)
+
+#if defined(RAK_4631) && RAK_4631 == 1 && !MESHTASTIC_EXCLUDE_ENVIRONMENTAL_SENSOR
+    detectRAK5801();
+#endif
 
 #if !MESHTASTIC_EXCLUDE_GPS
     // If we're taking on the repeater role, ignore GPS

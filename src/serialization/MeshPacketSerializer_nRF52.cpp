@@ -110,6 +110,12 @@ std::string MeshPacketSerializer::JsonSerialize(const meshtastic_MeshPacket *mp,
                     if (decoded->variant.environment_metrics.has_radiation) {
                         jsonObj["payload"]["radiation"] = decoded->variant.environment_metrics.radiation;
                     }
+                    if (decoded->variant.environment_metrics.has_current_a0) {
+                        jsonObj["payload"]["current_a0"] = decoded->variant.environment_metrics.current_a0;
+                    }
+                    if (decoded->variant.environment_metrics.has_current_a1) {
+                        jsonObj["payload"]["current_a1"] = decoded->variant.environment_metrics.current_a1;
+                    }
                 } else if (decoded->which_variant == meshtastic_Telemetry_air_quality_metrics_tag) {
                     if (decoded->variant.air_quality_metrics.has_pm10_standard) {
                         jsonObj["payload"]["pm10"] = (unsigned int)decoded->variant.air_quality_metrics.pm10_standard;
