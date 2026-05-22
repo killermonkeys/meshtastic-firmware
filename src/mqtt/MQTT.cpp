@@ -46,6 +46,9 @@ namespace
 {
 constexpr int reconnectMax = 5;
 
+// PubSubClient stores the hostname pointer without copying; keep storage alive through connect().
+static String mqttBrokerHost;
+
 // FIXME - this size calculation is super sloppy, but it will go away once we dynamically alloc meshpackets
 static uint8_t bytes[meshtastic_MqttClientProxyMessage_size + 30]; // 12 for channel name and 16 for nodeid
 
@@ -273,7 +276,7 @@ std::pair<String, uint16_t> parseHostAndPort(String server, uint16_t port = 0)
         } else {
             port = parsedPort;
         }
-        server[delimIndex] = 0;
+        server = server.substring(0, delimIndex);
     }
     return std::make_pair(std::move(server), port);
 }
@@ -319,9 +322,14 @@ bool connectPubSub(const PubSubConfig &config, PubSubClient &pubSub, Client &cli
 {
     pubSub.setBufferSize(1024, 1024);
     pubSub.setClient(client);
-    pubSub.setServer(config.serverAddr.c_str(), config.serverPort);
+    mqttBrokerHost = config.serverAddr;
+    if (mqttBrokerHost.length() == 0) {
+        LOG_ERROR("MQTT server address is empty");
+        return false;
+    }
+    pubSub.setServer(mqttBrokerHost.c_str(), config.serverPort);
 
-    LOG_INFO("Connecting directly to MQTT server %s, port: %d, username: %s, password: ***", config.serverAddr.c_str(),
+    LOG_INFO("Connecting directly to MQTT server %s, port: %d, username: %s, password: ***", mqttBrokerHost.c_str(),
              config.serverPort, config.mqttUsername);
 
     // Generate node ID from nodenum for client identification
